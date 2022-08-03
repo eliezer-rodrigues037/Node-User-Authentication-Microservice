@@ -1,11 +1,15 @@
 import  express,{Request, Response, NextFunction} from "express";
+import { StatusCodes } from "http-status-codes";
+import statusRoute from "./routes/status.route";
+import usersRoute from "./routes/users.route";
 
 const app = express();
 const port = 3000;
 
-app.get("/status", (req: Request,res: Response, next: NextFunction) => {
-    return res.status(200).send(({message: "Server is running"}));
-});
+app.use(express.json())
+
+app.use(statusRoute);
+app.use(usersRoute);
 
 app.listen(port, ()=> {
     console.log(`Server running on port ${port}.`);
