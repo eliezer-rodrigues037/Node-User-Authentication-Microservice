@@ -3,35 +3,16 @@ import { StatusCodes } from "http-status-codes";
 import ForbidenError from "../Models/forbidden.error";
 import userRepo from "../repositories/user.repo";
 import JWT from "jsonwebtoken";
+import basicAuthentication from "../middlewares/basic-authentication";
 
 const authRoute = Router();
 
-authRoute.post("/token", async (req: Request, res: Response, next: NextFunction) => {
-    const authHeader = req.headers["authorization"];
-
+authRoute.post("/token", basicAuthentication, async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!authHeader) {
-            throw new ForbidenError("Credenciais não informadas!");
-        }
-
-        const [authType, token] = authHeader.split(" ");
-
-        if (authType !== "Basic" || !token) {
-            throw new ForbidenError("Autenticação inválida.");
-        }
-
-        const tokenContent = Buffer.from(token, "base64").toString("utf-8");
-
-        const [username, password] = tokenContent.split(":");
-
-        if (!username || !password) {
-            throw new ForbidenError("Usuário ou senha não preenchido!");
-        }
-
-        const user = await userRepo.findByCredentials(username, password);
+        const user = req.user;
 
         if (!user) {
-            throw new ForbidenError("Usuário ou senha inválidos!");
+            throw new ForbidenError("Usuário não informado!");
         }
 
         const jwtPayload = { user: user };
