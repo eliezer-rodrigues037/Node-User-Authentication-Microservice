@@ -8,6 +8,7 @@
 
 import { NextFunction, Request, Response, Router } from "express";
 import { StatusCodes } from "http-status-codes";
+import { json } from "stream/consumers";
 import userRepo from "../repositories/user.repo";
 
 const usersRoute = Router();
@@ -19,15 +20,22 @@ const users = [
 ];
 
 usersRoute.get("/users", async (req: Request, res: Response, next: NextFunction) => {
-    const users = await userRepo.getUsers();
-
-    return res.status(StatusCodes.OK).json(users);
+    try {
+        const users = await userRepo.getUsers();
+        return res.status(StatusCodes.OK).json(users);
+    } catch (error) {
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ message: "Houve um erro ao buscar pelos usuários T.T" });
+    }
 });
 
-usersRoute.get("/users/:uuid", (req: Request<{ uuid: string }>, res: Response, next: NextFunction) => {
+usersRoute.get("/users/:uuid", async (req: Request<{ uuid: string }>, res: Response, next: NextFunction) => {
     const { uuid } = req.params;
-
-    return res.status(StatusCodes.OK).send({ uuid });
+    try {
+        const user = await userRepo.getUser(uuid);
+        return res.status(StatusCodes.OK).send({ user });
+    } catch (error) {
+        return res.status(StatusCodes.NOT_FOUND).send("User not found!");
+    }
 });
 
 usersRoute.post("/users", (req: Request, res: Response, next: NextFunction) => {
