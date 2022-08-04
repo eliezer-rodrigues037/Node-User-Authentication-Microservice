@@ -1,6 +1,6 @@
-import express, { Request, Response, NextFunction } from "express";
-import { StatusCodes } from "http-status-codes";
+import express from "express";
 import errorHandler from "./middlewares/error-handler";
+import authRoute from "./routes/auth.route";
 import statusRoute from "./routes/status.route";
 import usersRoute from "./routes/users.route";
 
@@ -13,6 +13,7 @@ app.use(express.urlencoded({ extended: true }));
 //Rotas
 app.use(statusRoute);
 app.use(usersRoute);
+app.use(authRoute);
 
 //Error handlers
 app.use(errorHandler);

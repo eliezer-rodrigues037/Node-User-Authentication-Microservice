@@ -13,6 +13,7 @@ import userRepo from "../repositories/user.repo";
 const usersRoute = Router();
 
 usersRoute.get("/users", async (req: Request, res: Response, next: NextFunction) => {
+    console.log("Header: ", req.headers["authorization"]);
     try {
         const users = await userRepo.getUsers();
         return res.status(StatusCodes.OK).json(users);
