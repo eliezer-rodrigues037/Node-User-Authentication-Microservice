@@ -1,13 +1,13 @@
 import { NextFunction, Request, Response, Router } from "express";
 import { StatusCodes } from "http-status-codes";
 import ForbidenError from "../Models/forbidden.error";
-import userRepo from "../repositories/user.repo";
 import JWT from "jsonwebtoken";
 import basicAuthentication from "../middlewares/basic-authentication";
+import bearerAuthentication from "../middlewares/bearer-authentication";
 
 const authRoute = Router();
 
-authRoute.post("/token", basicAuthentication, async (req: Request, res: Response, next: NextFunction) => {
+authRoute.post("/signin", basicAuthentication, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const user = req.user;
 
@@ -27,6 +27,10 @@ authRoute.post("/token", basicAuthentication, async (req: Request, res: Response
     } catch (error) {
         next(error);
     }
+});
+
+authRoute.post("/validate", bearerAuthentication, (req: Request, res: Response, next: NextFunction) => {
+    return res.send(StatusCodes.OK);
 });
 
 export default authRoute;

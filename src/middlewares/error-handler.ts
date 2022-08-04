@@ -7,7 +7,7 @@ function errorHandler(error: unknown, req: Request, res: Response, next: NextFun
     if (error instanceof DatabaseError) {
         return res.sendStatus(StatusCodes.BAD_REQUEST);
     } else if (error instanceof ForbidenError) {
-        return res.sendStatus(StatusCodes.FORBIDDEN);
+        return res.status(StatusCodes.FORBIDDEN).send(error.message);
     } else {
         return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
     }

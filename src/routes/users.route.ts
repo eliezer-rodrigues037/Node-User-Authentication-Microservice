@@ -8,9 +8,12 @@
 
 import { NextFunction, Request, Response, Router } from "express";
 import { StatusCodes } from "http-status-codes";
+import bearerAuthentication from "../middlewares/bearer-authentication";
 import userRepo from "../repositories/user.repo";
 
 const usersRoute = Router();
+
+usersRoute.use(bearerAuthentication);
 
 usersRoute.get("/users", async (req: Request, res: Response, next: NextFunction) => {
     console.log("Header: ", req.headers["authorization"]);
