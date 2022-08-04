@@ -8,16 +8,9 @@
 
 import { NextFunction, Request, Response, Router } from "express";
 import { StatusCodes } from "http-status-codes";
-import { json } from "stream/consumers";
 import userRepo from "../repositories/user.repo";
 
 const usersRoute = Router();
-
-const users = [
-    {
-        name: "Eliezer",
-    },
-];
 
 usersRoute.get("/users", async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -32,31 +25,49 @@ usersRoute.get("/users/:uuid", async (req: Request<{ uuid: string }>, res: Respo
     const { uuid } = req.params;
     try {
         const user = await userRepo.getUser(uuid);
-        return res.status(StatusCodes.OK).send({ user });
+        if (user.uuid) {
+            return res.status(StatusCodes.OK).send(user);
+        } else {
+            return res.status(StatusCodes.NOT_FOUND).send(`User not found for id: ${uuid}`);
+        }
     } catch (error) {
-        return res.status(StatusCodes.NOT_FOUND).send("User not found!");
+        next(error);
     }
 });
 
-usersRoute.post("/users", (req: Request, res: Response, next: NextFunction) => {
-    const user = req.body;
+usersRoute.post("/users", async (req: Request, res: Response, next: NextFunction) => {
+    const newUser = req.body;
 
-    if (user) users.push(user);
+    try {
+        const uuid = await userRepo.createUser(newUser);
 
-    return res.status(StatusCodes.CREATED).send({ user });
+        return res.status(StatusCodes.CREATED).send({ uuid });
+    } catch (error) {
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ error });
+    }
 });
 
-usersRoute.put("/users/:uuid", (req: Request<{ uuid: string }>, res: Response, next: NextFunction) => {
+usersRoute.put("/users/:uuid", async (req: Request<{ uuid: string }>, res: Response, next: NextFunction) => {
     const { uuid } = req.params;
     const user = req.body;
     user.uuid = uuid;
 
-    return res.status(StatusCodes.OK).send({ userRequested: user });
+    try {
+        await userRepo.editUser(user);
+        return res.sendStatus(StatusCodes.OK);
+    } catch (error) {
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ error });
+    }
 });
 
-usersRoute.delete("/users/:uuid", (req: Request<{ uuid: string }>, res: Response, next: NextFunction) => {
+usersRoute.delete("/users/:uuid", async (req: Request<{ uuid: string }>, res: Response, next: NextFunction) => {
     const { uuid } = req.params;
 
-    return res.sendStatus(StatusCodes.OK);
+    try {
+        await userRepo.remove(uuid);
+        return res.sendStatus(StatusCodes.OK);
+    } catch (error) {
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ error });
+    }
 });
 export default usersRoute;
